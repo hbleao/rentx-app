@@ -1,138 +1,180 @@
-import React, { useState } from 'react';
-import { useTheme } from 'styled-components';
-import { StatusBar } from 'react-native';
-import { format, parseISO } from 'date-fns';
-
-import { CarDTO } from '../../dtos/CarDTO';
-
-import { BackButton } from '../../components/BackButton';
-import { Button } from '../../components/Button';
-import { Calendar, DayProps, generateInterval, MarkedDateProps } from '../../components/Calendar';
-
-import ArrowSvg from '../../assets/arrow.svg';
+import React, { useEffect, useState } from "react";
+import { Alert } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { useTheme } from "styled-components";
+import { format } from "date-fns";
 
 import {
   Container,
-  Header,
-  Title,
-  RentalPeriod,
+  Content,
   DateInfo,
   DateTitle,
-  DateValueContainer,
   DateValue,
-  Content,
-  Footer
-} from './styles';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/react-navigation/stack.routes';
+  Footer,
+  Header,
+  RentalPeriod,
+  Title,
+} from "./styles";
 
+import { 
+  BackButton, 
+  Button, 
+  Calendar, 
+  DayProps, 
+  Loader, 
+  MarkedDatesProps 
+} from "../../components";
 
-interface RentalPeriod {
-  startFormatted: string;
-  endFormatted: string;
+import ArrowSvg from '../../assets/arrow.svg';
 
-}
+import { generateInterval, getPlatformDate } from "../../utils";
 
-export interface SchedulingParams {
-  car: CarDTO;
-}
+import { RentalPeriodProps, SchedulingParamsProps } from "./types";
+import { getSchedulesCarsById } from "../../services";
 
-type Props = StackScreenProps<RootStackParamList, 'Scheduling'>;
+export const Scheduling = ({ navigation, route }: any) => {
+  const { car } = route.params as SchedulingParamsProps;
+  const { colors } = useTheme();
+  const [lastSelectedDay, setLastSelectedDay] = useState<DayProps>({} as DayProps);
+  const [markedDates, setMarkedDates] = useState<MarkedDatesProps>({} as MarkedDatesProps);
+  const [rentalPeriod, setRentalPeriod] = useState<RentalPeriodProps>({} as RentalPeriodProps);
+  const [rentalDisabledDates, setRentalDisabledDates] = useState<string[]>([]);
+  const [rentalDisabledDatesWithDisabledProperties, setRentalDisabledDatesWithDisabledProperties] = useState<MarkedDatesProps>({} as MarkedDatesProps);
+  const [isLoadingScheduledDates, setIsLoadingScheduledDates] = useState(false);
 
-export function Scheduling({ navigation, route }: Props) {
-  const [lastSelectedDate, setLastSelectedDate] = useState<DayProps>({} as DayProps)
-  const [markedDates, setMarkedDates] = useState<MarkedDateProps>({} as MarkedDateProps)
-  const [rentalPeriod, setRentalPeriod] = useState<RentalPeriod>({} as RentalPeriod)
+  function handleGoBack() {
+    navigation.goBack();
+  }
 
-  const theme = useTheme();
-  const { car } = route.params;
+  function handleConfirmScheduling() {
+    if(!rentalPeriod.startFormatted || !rentalPeriod.endFormatted) {
+      Alert.alert('Selecione o periodo do que ficará com o carro.');
+      return;
+    }
 
-  function handleConfirmRental() {
     navigation.navigate('SchedulingDetails', {
       car,
-      dates: Object.keys(markedDates)
+      dates: markedDates,
+      rentalPeriod,
+      rentalDisabledDates
     });
   }
 
-  function handleGoBack() {
-    if (navigation.canGoBack())
-      navigation.goBack()
-  }
-
-  function handleSelectDate(date: DayProps) {
-    let start = !lastSelectedDate.timestamp ? date : lastSelectedDate;
-    let end = date;
+  function handleChangeDate(date: DayProps) {
+    let start = !lastSelectedDay.timestamp ? date : lastSelectedDay;
+    let end =  date;
 
     if(start.timestamp > end.timestamp) {
       start = end;
       end = start;
     }
-
-    setLastSelectedDate(end);
-    const interval = generateInterval(start, end);
+    
+    setLastSelectedDay(end);
+    const interval = generateInterval({
+      start, 
+      end,
+      dayColor: colors.main,
+      periodColor: colors.main_light
+    });
+    
     setMarkedDates(interval);
 
     const firstDate = Object.keys(interval)[0];
-    const endDate = Object.keys(interval)[Object.keys(interval).length - 1];
+    const lastDate = Object.keys(interval)[Object.keys(interval).length - 1];
 
     setRentalPeriod({
-      startFormatted: format(parseISO(firstDate), 'dd/MM/yyyy'),
-      endFormatted: format(parseISO(endDate), 'dd/MM/yyyy'),
-    })
+      startFormatted: format(getPlatformDate(new Date(firstDate)), 'dd/MM/yyyy'),
+      endFormatted: format(getPlatformDate(new Date(lastDate)), 'dd/MM/yyyy'),
+    });
   }
+
+  async function getScheduledDates() {
+    try {
+      setIsLoadingScheduledDates(true);
+      const scheduledDatesResponse = await getSchedulesCarsById(car.id);
+
+      if(scheduledDatesResponse.unavailable_dates.length < 1) {
+        return;
+      }
+
+      setRentalDisabledDates(scheduledDatesResponse.unavailable_dates);
+
+      const unavailableDatesWithDisabledProperties = 
+        scheduledDatesResponse.unavailable_dates.map(scheduledDay => [scheduledDay, {
+        textColor: "#FDEDEF",
+        disabled: true,
+        inactive: true,
+        disableTouchEvent: true
+      }]);
+  
+      const unavailableDatesKeyValueList = Object.fromEntries(unavailableDatesWithDisabledProperties);
+      setRentalDisabledDatesWithDisabledProperties(unavailableDatesKeyValueList);
+    } catch (error) {
+      Alert.alert('Não foi possível carregar os dias que foram agendados.');
+      console.error('getScheduledDates', error);
+    } finally {
+      setIsLoadingScheduledDates(false);
+    }
+  }
+
+  useEffect(() => {
+    getScheduledDates();
+  }, []);
 
   return (
     <Container>
+      <StatusBar
+        style="light"
+        translucent
+        backgroundColor="transparent"
+      />
       <Header>
-        <StatusBar 
-          barStyle="light-content"
-          translucent
-          backgroundColor="transparent"
+        <BackButton
+          color={colors.shape} 
+          onPress={handleGoBack}
         />
-        <BackButton 
-          color={theme.colors.shape}
-          onPress={handleGoBack} 
-        />
-
         <Title>
-          Escolha uma{'\n'}
-          data de início e{'\n'}
+          Escolha uma {'\n'}
+          data de inicio e {'\n'}
           fim do aluguel
         </Title>
-
+        
         <RentalPeriod>
-          <DateInfo>
-            <DateTitle>DE</DateTitle>
-            <DateValueContainer selected={!!rentalPeriod.startFormatted}>
-              <DateValue>{rentalPeriod.startFormatted}</DateValue>
-            </DateValueContainer>
+          <DateInfo selected={!!rentalPeriod.startFormatted}>
+            <DateTitle>de</DateTitle>
+            <DateValue>{rentalPeriod.startFormatted}</DateValue>
           </DateInfo>
 
           <ArrowSvg />
 
-          <DateInfo>
-            <DateTitle>ATÉ</DateTitle>
-            <DateValueContainer selected={!!rentalPeriod.endFormatted}>
-              <DateValue>{rentalPeriod.endFormatted}</DateValue>
-            </DateValueContainer>
+          <DateInfo selected={!!rentalPeriod.endFormatted}>
+            <DateTitle>ate</DateTitle>
+            <DateValue>{rentalPeriod.endFormatted}</DateValue>
           </DateInfo>
         </RentalPeriod>
       </Header>
-
-      <Content>
-        <Calendar
-          markedDates={markedDates}
-          onDayPress={handleSelectDate}
-        />
-      </Content>
-
+      
+      {isLoadingScheduledDates ? (
+        <Loader />
+      ) : (
+        <Content>
+          <Calendar
+            markedDates={{
+              ...markedDates,
+              ...rentalDisabledDatesWithDisabledProperties
+            }}
+            onDayPress={handleChangeDate}
+          />
+        </Content>
+      )}
+      
       <Footer>
-        <Button 
-          title="Confirmar" 
-          onPress={handleConfirmRental}
-          enabled={!!rentalPeriod.startFormatted}
+        <Button
+          enabled={!!rentalPeriod.startFormatted && !!rentalPeriod.endFormatted} 
+          title="Confirmar agendamento"
+          onPress={handleConfirmScheduling}
         />
       </Footer>
     </Container>
-  );
+  )
 }

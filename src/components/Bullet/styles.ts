@@ -1,17 +1,13 @@
-import { View } from 'react-native';
-import styled from 'styled-components/native';
+import styled, { css } from "styled-components/native";
 
-interface BulletViewProps {
-  active?: boolean; 
-}
+import { BulletProps } from './types';
 
-export const BulletView = styled(View)<BulletViewProps>`
-  width: 6px;
-  height: 6px;
-
-  background-color: ${({ theme, active }) => 
-    active ? theme.colors.title : theme.colors.text_detail 
-  };
-
-  border-radius: 3px;
+export const Container = styled.View<BulletProps>`
+  ${({ theme, active }) => css`
+    width: 6px;
+    height: 6px;
+    background-color: ${active ? theme.colors.title : theme.colors.shape};
+    margin-left: 8px;
+    border-radius: 6px;
+  `};
 `;

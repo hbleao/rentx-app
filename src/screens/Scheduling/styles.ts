@@ -1,67 +1,65 @@
-import styled, { css } from 'styled-components/native';
-import { RFValue } from 'react-native-responsive-fontsize';
-import { getStatusBarHeight } from 'react-native-iphone-x-helper';
-
-interface DateValueContainerProps {
-  selected?: boolean;
-}
+import styled, { css } from "styled-components/native";
+import { getStatusBarHeight } from "react-native-iphone-x-helper";
+import { RFValue } from "react-native-responsive-fontsize";
+import { DateValueProps } from "./types";
 
 export const Container = styled.View`
-  flex: 1;
-  background-color: ${({ theme }) => theme.colors.background_secondary};
+  ${({ theme }) => css`
+    flex: 1;
+    background-color: ${theme.colors.backgroundSecondary};
+  `}
 `;
 
 export const Header = styled.View`
-  width: 100%;
-  height: 325px;
-
-  background-color: ${({ theme }) => theme.colors.header};
-
-  justify-content: center;
-  padding: 25px;
-  padding-top: ${getStatusBarHeight() + 30}px;
+  ${({ theme }) => css`
+    width: 100%;
+    background-color: ${theme.colors.header};
+    padding: ${getStatusBarHeight() + 32}px 24px 0px;
+  `}
 `;
 
 export const Title = styled.Text`
-  color: ${({ theme }) => theme.colors.shape};
-  font-family: ${({ theme }) => theme.fonts.secondary_600};
-  font-size: ${RFValue(34)}px;
-
-  margin-top: 24px;
+  ${({ theme }) => css`
+    font-family: ${theme.fonts.secondary_600};
+    font-size: ${RFValue(34)}px;
+    color: ${theme.colors.shape};
+    margin-top: 24px;
+  `}
 `;
 
 export const RentalPeriod = styled.View`
-  width: 100%;
-
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-
-  margin: 32px 0;
+  ${({ theme }) => css`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 32px 0;
+  `}
 `;
 
-export const DateInfo = styled.View`
-  width: 30%;
+export const DateInfo = styled.View<DateValueProps>`
+  ${({ theme, selected }) => css`
+    width: 33%;
+    border-bottom-color: ${theme.colors.shape};
+    border-bottom-width: 1px;
+    padding-bottom: ${selected ? '5px' : '10px'};
+  `}
 `;
 
 export const DateTitle = styled.Text`
-  color: ${({ theme }) => theme.colors.text};
-  font-family: ${({ theme }) => theme.fonts.secondary_500};
-  font-size: ${RFValue(10)}px;
-`;
-
-export const DateValueContainer = styled.View<DateValueContainerProps>`  
-  ${({ selected, theme }) => !selected && css`
-    border-bottom-width: 1px;
-    border-bottom-color: ${theme.colors.text};
-    padding-bottom: 5px;
+  ${({ theme }) => css`
+    color: ${theme.colors.text};
+    font-family: ${theme.fonts.secondary_500};
+    font-size: ${RFValue(10)}px;
   `}
 `;
 
 export const DateValue = styled.Text`
-  color: ${({ theme }) => theme.colors.shape};
-  font-family: ${({ theme }) => theme.fonts.primary_500};
-  font-size: ${RFValue(15)}px;
+  ${({ theme }) => css`
+    color: ${theme.colors.shape};
+    font-family: ${theme.fonts.primary_500};
+    font-size: ${RFValue(15)}px;
+  `}
 `;
 
 export const Content = styled.ScrollView.attrs({
@@ -69,8 +67,14 @@ export const Content = styled.ScrollView.attrs({
     paddingBottom: 24
   },
   showsVerticalScrollIndicator: false
-})``;
+})`
+  ${({ theme }) => css`
+
+  `}
+`;
 
 export const Footer = styled.View`
-  padding: 24px;
+  ${({ theme }) => css`
+    padding: 24px;
+  `}
 `;

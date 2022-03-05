@@ -1,134 +1,115 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-import { RFValue } from 'react-native-responsive-fontsize';
-import { Ionicons } from '@expo/vector-icons';
-import { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { 
+  Alert, 
+  BackHandler, 
+  FlatList, 
+  StatusBar, 
+} from 'react-native';
 import { useTheme } from 'styled-components';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-
-import { api } from '../../services/api';
-import { CarDTO } from '../../dtos/CarDTO';
-
-import { Car } from '../../components/Car';
-import { LoadAnimation } from '../../components/LoadAnimation';
-
-import Logo from "../../assets/logo.svg";
+import { RFValue } from 'react-native-responsive-fontsize';
+import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 
 import {
-  AnimatedMyCarsButton,
-  AnimatedMyCarsView,
-  CarList,
   Container,
   Header,
   HeaderContent,
-  TotalCars
+  TotalCards,
 } from './styles';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/react-navigation/stack.routes';
 
-type Props = StackScreenProps<RootStackParamList, 'Home'>;
+import { 
+  Car, 
+  DragButton, 
+  LoaderAnimation 
+} from '../../components';
 
-export function Home({ navigation }: Props) {
+import Logo from '../../assets/logo.svg';
+
+import { getCarsServices } from '../../services';
+
+import { CarDTO } from '../../dtos/CarDTO';
+
+export const Home = gestureHandlerRootHOC(({ navigation }: any) => {
+  const { colors } = useTheme();
   const [cars, setCars] = useState<CarDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const theme = useTheme()
+  const [isLoadingCarList, setIsLoadingCarList] = useState(false);
 
-  const positionX = useSharedValue(0);
-  const positionY = useSharedValue(0);
-
-  const animatedMyCarsViewStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: positionX.value },
-        { translateY: positionY.value }
-      ]
+  async function loadCarsList() {
+    try {
+      setIsLoadingCarList(true);
+      const carsListResponseService = await getCarsServices();
+      setCars(carsListResponseService);
+    } catch (error) {
+      console.error('loadCarsList', loadCarsList);
+    } finally {
+      setIsLoadingCarList(false);
     }
-  })
-
-  const onGestureEvent = useAnimatedGestureHandler({
-    onStart(_, ctx: any) {
-      ctx.positionX = positionX.value,
-      ctx.positionY = positionY.value
-    },
-    onActive(event, ctx: any) {
-      positionX.value = event.translationX + ctx.positionX,
-      positionY.value = event.translationY + ctx.positionY
-    },
-    onEnd() {
-      positionX.value = withSpring(0),
-      positionY.value = withSpring(0)
-    }
-  });
+  };
 
   function handleCarDetails(car: CarDTO) {
     navigation.navigate('CarDetails', { car });
   }
 
   function handleOpenMyCars() {
-    navigation.navigate('MyCars')
+    navigation.navigate('MyCars');
   }
 
   useEffect(() => {
-    async function fetchCars() {
-      try {
-        const response = await api.get('/cars');
-        setCars(response.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
+    let isMounted = true;
+
+    if(isMounted) {
+      loadCarsList();
     }
 
-    fetchCars();
-  }, [])
+    return () => {
+      isMounted = false;
+    }
+  }, []);
 
   return (
     <Container>
-      <StatusBar 
+      <StatusBar
         barStyle="light-content"
-        translucent
         backgroundColor="transparent"
+        translucent
       />
-
       <Header>
         <HeaderContent>
           <Logo
             width={RFValue(108)}
-            height={RFValue(12)}
+            height={RFValue(24)}
           />
+          {!isLoadingCarList && (
+            <TotalCards>
+              Total de {cars.length} carros
+            </TotalCards>
+          )}
 
-          <TotalCars>
-            { loading ? `Buscando carros...` : `Total de ${cars.length} carros` }
-          </TotalCars>
         </HeaderContent>
       </Header>
 
-      { loading ? <LoadAnimation /> : (
-        <CarList 
+      {isLoadingCarList ? (
+        <LoaderAnimation />
+      ):(
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            padding: 24
+          }}
           data={cars}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => (
+          renderItem={({ item }) => 
             <Car 
               data={item} 
-              onPress={() => handleCarDetails(item)}
+              onPress={() => handleCarDetails(item)} 
             />
-          )}
+          }
         />
       )}
 
-      <PanGestureHandler onGestureEvent={onGestureEvent}>
-        <AnimatedMyCarsView style={animatedMyCarsViewStyle}>
-          <AnimatedMyCarsButton onPress={handleOpenMyCars}>
-            <Ionicons 
-              name="ios-car-sport" 
-              size={32}
-              color={theme.colors.shape}
-            />
-          </AnimatedMyCarsButton>
-        </AnimatedMyCarsView>
-      </PanGestureHandler>
-
+      <DragButton
+        onPress={handleOpenMyCars} 
+        colorButton={colors.main} 
+      />
     </Container>
-  );
-}
+  )
+})

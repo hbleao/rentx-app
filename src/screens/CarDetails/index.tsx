@@ -1,104 +1,113 @@
 import React from 'react';
-import { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolate } from 'react-native-reanimated';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
-import { StatusBar } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
+import { useTheme } from 'styled-components';
 
-import { CarDTO } from '../../dtos/CarDTO';
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolate
+} from 'react-native-reanimated';
+
+import { 
+  About,
+  Accessories,
+  Brand,
+  CarImages,
+  Container,
+  Description,
+  Details,
+  Footer,
+  Header,
+  Name,
+  Period,
+  Price,
+  Rent,
+} from './styles';
+
+import { 
+  BackButton,
+  Button,
+  ImageSlider,
+  Accessory,
+} from '../../components';
 
 import { getAccessoryIcon } from '../../utils/getAccessoryIcon';
 
-import { BackButton } from '../../components/BackButton';
-import { ImageSlider } from '../../components/ImageSlider';
-import { Accessory } from '../../components/Accessory';
-import { Button } from '../../components/Button';
+import { CarDetailsParamsProps } from './types';
 
-import {
-  Container, 
-  Header, 
-  Details,
-  Description,
-  Brand,
-  Name,
-  Rent,
-  Period,
-  Price,
-  About,
-  Accessories,
-  Footer,
-  AnimatedHeaderAndSlider,
-  AnimatedCarImages,
-  AnimatedContent
-} from './styles';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/react-navigation/stack.routes';
-
-export interface CarDetailsParams {
-  car: CarDTO;
-}
-
-type Props = StackScreenProps<RootStackParamList, 'CarDetails'>;
-
-export function CarDetails({ navigation, route }: Props) {
-  const { car } = route.params;
-  const statusBarHeight = getStatusBarHeight();
-
+export const CarDetails = ({ navigation, route }: any) => {
+  const { car } = route.params as CarDetailsParamsProps;
+  const { colors } = useTheme();
   const scrollY = useSharedValue(0);
-  const scrollHandler = useAnimatedScrollHandler(event => {
-    scrollY.value = event.contentOffset.y;
-  });
+  const scrollHandler = useAnimatedScrollHandler(e => 
+    scrollY.value = e.contentOffset.y);
 
   const headerStyleAnimation = useAnimatedStyle(() => {
     return {
       height: interpolate(
-        scrollY.value,
-        [0, 200],
-        [200, statusBarHeight + 50],
+        scrollY.value, 
+        [0, 200], 
+        [200, 80], 
         Extrapolate.CLAMP
       )
     }
-  })
-  
+  });
+
   const sliderCarsStyleAnimation = useAnimatedStyle(() => {
     return {
       opacity: interpolate(
-        scrollY.value,
-        [0, 150],
-        [1, 0],
+        scrollY.value, 
+        [0, 150], 
+        [1, 0], 
         Extrapolate.CLAMP
       )
     }
-  })
-
-  function handleChooseRentalPeriod() {
-    navigation.navigate('Scheduling', { car })
-  }
+  });
 
   function handleGoBack() {
-    if (navigation.canGoBack())
-      navigation.goBack()
+    navigation.goBack(); 
+  }
+
+  function handleConfirmRental() {
+    navigation.navigate('Scheduling', {
+      car,
+    });
   }
 
   return (
     <Container>
-      <StatusBar 
-        barStyle="dark-content"
-        translucent
+      <StatusBar
+        barStyle='dark-content'
         backgroundColor="transparent"
+        translucent
       />
-
-      <AnimatedHeaderAndSlider style={headerStyleAnimation}>
-        <Header>
+      <Animated.View style={[
+        headerStyleAnimation,
+        styles.header,
+        { backgroundColor: colors.backgroundSecondary }
+      ]}>
+        <Header style={styles.back}>
           <BackButton onPress={handleGoBack} />
         </Header>
 
-        <AnimatedCarImages style={sliderCarsStyleAnimation}>
-          <ImageSlider 
-            imagesUrl={car.photos}
-          />
-        </AnimatedCarImages>
-      </AnimatedHeaderAndSlider>
+        <Animated.View style={sliderCarsStyleAnimation}>
+          <CarImages>
+            <ImageSlider 
+              imageUrls={car.photos}
+            />
+          </CarImages>
+        </Animated.View>
+      </Animated.View>
 
-      <AnimatedContent
+      <Animated.ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: getStatusBarHeight() + 160,
+        }}
+        showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
@@ -109,29 +118,42 @@ export function CarDetails({ navigation, route }: Props) {
           </Description>
 
           <Rent>
-            <Period>{car.rent.period}</Period>
-            <Price>R$ {car.rent.price}</Price>
+            <Period>{car.period}</Period>
+            <Price>R$ {car.price}</Price>
           </Rent>
         </Details>
 
         <Accessories>
-          {
-            car.accessories.map(accessory => (
-              <Accessory 
-                key={accessory.type}
-                name={accessory.name}
-                icon={getAccessoryIcon(accessory.type)}
-              />
-            ))
-          }
+          {car.accessories.map(accessory => (
+            <Accessory 
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+            />
+          ))}
         </Accessories>
 
         <About>{car.about}</About>
-      </AnimatedContent>
-      
+      </Animated.ScrollView> 
+
       <Footer>
-        <Button title="Escolher período do aluguel" onPress={handleChooseRentalPeriod} />
+        <Button
+          title='Escolher periodo do aluguel'
+          onPress={handleConfirmRental}
+        />
       </Footer>
     </Container>
-  );
+  )
 }
+
+const styles = StyleSheet.create({
+  header: {
+    position: 'absolute',
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+  back: {
+    position: 'absolute',
+    zIndex: 2
+  }
+})

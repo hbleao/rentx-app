@@ -1,119 +1,136 @@
-import React, { useState } from 'react';
-import { Alert, Platform, StatusBar } from 'react-native';
+import React, { useState } from "react";
+import { 
+  Alert,
+  Keyboard, 
+  KeyboardAvoidingView, 
+  StatusBar, 
+  TouchableWithoutFeedback,
+  ScrollView
+} from "react-native";
+import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
-import { StackScreenProps } from '@react-navigation/stack';
 
-import { RootStackParamList } from '../../types/react-navigation/stack.routes';
-import {
-  KAV,
-  ScrollableContainer, 
-  Header, 
-  Title, 
-  SubTitle, 
-  Footer, 
-  RegisterButton, 
-  LoginButton, 
+import { useTheme } from "styled-components";
+
+import { 
+  Container,
+  Header,
+  Title,
+  Subtitle,
   Form,
-  EmailInput,
-  PasswordInput
-} from './styles';
+  Inputs,
+  Buttons,
+} from "./styles";
 
-type Props = StackScreenProps<RootStackParamList, 'SignIn'>;
+import { 
+  Button,
+  TextInput,
+  PasswordInput,
+  Separator
+} from "../../components";
 
-export function SignIn({ navigation }: Props) {
+import { 
+  asyncLogin,
+} from '../../store/reducers';
+
+import { schema } from '../../constants/screens/SignIn';
+
+export const SignIn = ({ navigation }: any) => {
+  const { colors } = useTheme();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  async function handleSignIn() {
-    try {
-      const schema = Yup.object().shape({
-        email: Yup
-          .string()
-          .required('E-mail obrigatório')
-          .email('Digite um e-mail válido'),
-        password: Yup
-          .string()
-          .required('Senha obrigatória')
-      })
   
-      await schema.validate({ email, password }, { abortEarly: false });
-      Alert.alert('tudo certo');
+  async function handleSubmit() {
+    try {
+      await schema.validate({ email, password });
 
-      // Fazer login.
+      dispatch(asyncLogin());
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        return Alert.alert('Opa', error.errors.join('\n'));
+        Alert.alert('Opa... ', error.message);
+        console.log('Log: error', error);
+      } else {
+        Alert.alert(
+          'Ocorreu um erro na autenticação', 
+          'verifique suas credenciais.'
+        );
+        console.log('Log: error', error);
       }
-
-      return Alert.alert(
-        'Erro na autenticação', 
-        'Ocorreu um erro ao fazer login, verifique as credenciais.'
-      );
     }
   }
 
-  function handleRegister() {
-    navigation.navigate('SignUpFirstStep');
+  function handleCloseKeyBoard() {
+    Keyboard.dismiss();
+  }
+
+  function handleGoToSignUp() {
+    navigation.navigate('SignUp');
   }
 
   return (
-    <KAV 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      behavior="position"
+      enabled
     >
-      <ScrollableContainer 
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <StatusBar 
-          barStyle="dark-content"
-          backgroundColor="transparent"
-          translucent
-        />
+      <ScrollView>
+        <TouchableWithoutFeedback onPress={handleCloseKeyBoard}>
+          <Container>
+            <StatusBar
+              backgroundColor="transparent"
+              translucent
+              barStyle="dark-content"
+            />
+            <Header>
+              <Title>
+                Estamos {`\n`}
+                quase lá
+              </Title>
+              <Subtitle>
+                Faça seu login para começar{`\n`}
+                uma experiência incrível.
+              </Subtitle>
+            </Header>
 
-        <Header>
-          <Title>
-            Estamos{'\n'}
-            quase lá.
-          </Title>
+            <Form>
+              <Inputs>
+                <TextInput
+                  IconName="mail"
+                  placeholder="E-mail"
+                  keyboardType="email-address"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setEmail}
+                  value={email}
+                />
+                <Separator height={8} />
+                <PasswordInput
+                  IconName="lock"
+                  placeholder="Senha"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onChangeText={setPassword}
+                  value={password}
+                />
+              </Inputs>
 
-          <SubTitle>
-            Faça seu login para começar{'\n'}
-            uma experiência incrível.
-          </SubTitle>
-        </Header>
-
-        <Form>
-          <EmailInput
-            iconName="mail"
-            placeholder="E-mail"
-            keyboardType="email-address"
-            autoCorrect={false}
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-
-          <PasswordInput 
-            placeholder="Senha"
-            autoCorrect={false}
-            autoCapitalize="none"
-            value={password}
-            onChangeText={setPassword}
-          />
-        </Form>
-
-        <Footer>
-          <LoginButton 
-            title="Login"
-            onPress={handleSignIn}
-          />
-
-          <RegisterButton 
-            title="Criar conta gratuita"
-            onPress={handleRegister}
-          />
-        </Footer>
-      </ScrollableContainer>
-    </KAV>
-  );
+              <Buttons>
+                <Button
+                  title="Login"
+                  onPress={handleSubmit}
+                />
+                <Separator height={8} />
+                <Button
+                  title="Criar conta gratuita"
+                  color={colors.header}
+                  bgColor={colors.backgroundSecondary}
+                  onPress={handleGoToSignUp}
+                />
+              </Buttons>
+            </Form>
+          </Container>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  )
 }

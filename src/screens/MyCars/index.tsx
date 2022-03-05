@@ -1,127 +1,117 @@
-import React, { useEffect, useState } from 'react';
-import { StatusBar, FlatList } from 'react-native';
-import { useTheme } from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { FlatList } from "react-native";
+import { useSelector } from "react-redux";
 import { AntDesign } from '@expo/vector-icons';
 
-import { CarDTO } from '../../dtos/CarDTO';
-import { api } from '../../services/api';
-
-import { BackButton } from '../../components/BackButton';
-import { Car } from '../../components/Car';
-import { LoadAnimation } from '../../components/LoadAnimation';
-
 import {
-  Container,
-  Header,
-  Title,
-  SubTitle,
-  Content,
-  Appointments,
-  AppointmentsTitle,
+  Appointment,
   AppointmentsQuantity,
+  AppointmentsTitle,
   CarWrapper,
   CarFooter,
-  CarFooterTitle,
+  CarTitle,
   CarFooterPeriod,
   CarFooterDate,
+  Container,
+  Content,
+  Header,
+  Subtitle,
+  Title
 } from './styles';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types/react-navigation/stack.routes';
 
+import { useTheme } from "styled-components";
+import { selectAuth } from "../../store/reducers";
 
-interface CarProps {
-  id: number;
-  user_id: number;
-  car: CarDTO;
-  startDate: string;
-  endDate: string;
-}
+import { BackButton, Car, LoaderAnimation } from "../../components";
 
-type Props = StackScreenProps<RootStackParamList, 'MyCars'>;
+import { getScheduleByUser } from "../../services";
 
-export function MyCars({ navigation }: Props) {
-  const [cars, setCars] = useState<CarProps[]>([])
-  const [loading, setLoading] = useState(true);
+import { ScheduledByUserIdDTO } from "../../dtos/ScheduleDTO";
 
-  const theme = useTheme();
+export const MyCars = ({ navigation }) => {
+  const { colors } = useTheme();
+  const auth = useSelector(selectAuth);
+  const [cars, setCars] = useState<ScheduledByUserIdDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function loadCarsList() {
+    try {
+      setIsLoading(true);
+      const scheduleCarsByUserIdResponse = await getScheduleByUser(auth.user.id);
+      setCars(scheduleCarsByUserIdResponse);
+    } catch (error) {
+      console.error('loadCarsList', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   function handleGoBack() {
-    if (navigation.canGoBack())
-      navigation.goBack()
+    navigation.goBack();
   }
 
   useEffect(() => {
-    async function fetchCars() {
-      try {
-        const response = await api.get('schedules_byuser?user_id=1');
-        setCars(response.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCars();
-  }, [])
+    loadCarsList();
+  }, []);
 
   return (
     <Container>
+      <StatusBar
+        style="light"
+        translucent
+        backgroundColor="transparent"
+      />
       <Header>
-        <StatusBar 
-          barStyle="light-content"
-          translucent
-          backgroundColor="transparent"
+        <BackButton
+          color={colors.shape} 
+          onPress={handleGoBack}
         />
-        <BackButton 
-          color={theme.colors.shape}
-          onPress={handleGoBack} 
-        />
-
         <Title>
-          Escolha uma{'\n'}
-          data de início e{'\n'}
+          Escolha uma {'\n'}
+          data de inicio e {'\n'}
           fim do aluguel
         </Title>
 
-        <SubTitle>
-          Conforto, segurança e praticidade.
-        </SubTitle>
+        <Subtitle>
+          Conforto, segutança e praticidade.
+        </Subtitle>
       </Header>
-    
-      { loading ? <LoadAnimation /> : (
-        <Content>
-          <Appointments>
-            <AppointmentsTitle>Agendamentos feitos</AppointmentsTitle>
-            <AppointmentsQuantity>{cars.length}</AppointmentsQuantity>
-          </Appointments>
 
+      <Content>
+        <Appointment>
+          <AppointmentsTitle>Agendamentos feitos</AppointmentsTitle>
+          {!isLoading && <AppointmentsQuantity>{cars.length}</AppointmentsQuantity>}
+        </Appointment>
+
+        {isLoading ? (
+          <LoaderAnimation />
+        ) : (
           <FlatList 
             data={cars}
-            keyExtractor={item => String(item.id)}
+            keyExtractor={item => item.id}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }) => 
               <CarWrapper>
                 <Car data={item.car} />
-                
                 <CarFooter>
-                  <CarFooterTitle>Período</CarFooterTitle>
+                  <CarTitle>Período</CarTitle>
                   <CarFooterPeriod>
                     <CarFooterDate>{item.startDate}</CarFooterDate>
-                    <AntDesign
+                    <AntDesign 
                       name="arrowright"
                       size={20}
-                      color={theme.colors.title}
-                      style={{ marginHorizontal: 10 }}
+                      color={colors.title}
+                      style={{ marginHorizontal: 10 }} 
                     />
                     <CarFooterDate>{item.endDate}</CarFooterDate>
                   </CarFooterPeriod>
                 </CarFooter>
               </CarWrapper>
-            )}
+            }
           />
-        </Content>
-      )}
+        )}
+      </Content>
     </Container>
-  );
+  )
 }

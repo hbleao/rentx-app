@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { StackRoutes } from './stack.routes';
+import { PublicStackRoutes } from './public.stack.routes';
+import { TabPrivateRoutes } from './app.tab.routes';
 
-export function Routes() {
+import { selectAuth, asyncLogin } from '../store/reducers';
+
+export const Routes = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector(selectAuth);
+
+  const handleAsyncLogin = useCallback(() => {
+    dispatch(asyncLogin());
+  }, []);
+
+  useEffect(() => {
+    let isMount = true;
+
+    if(isMount) {
+      handleAsyncLogin();
+    }
+
+    return () => {
+      isMount = false;
+    }
+  }, []);
+
   return (
     <NavigationContainer>
-      <StackRoutes />
+      {user?.id ? <TabPrivateRoutes /> : <PublicStackRoutes />}
     </NavigationContainer>
-  );
+  )
 }

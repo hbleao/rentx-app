@@ -1,60 +1,53 @@
-import { getStatusBarHeight } from 'react-native-iphone-x-helper';
-import { RFValue } from 'react-native-responsive-fontsize';
-import styled from 'styled-components/native';
+import { getBottomSpace, getStatusBarHeight } from "react-native-iphone-x-helper";
+import { RFValue } from "react-native-responsive-fontsize";
+import styled, { css } from "styled-components/native";
 
-import { Button } from '../../components/Button';
-import { Input } from '../../components/Input';
-import { ProtectedInput } from '../../components/ProtectedInput';
-
-export const KAV = styled.KeyboardAvoidingView`
-  flex: 1;
-`;
-
-export const ScrollableContainer = styled.ScrollView.attrs({
-  contentContainerStyle: {
-    paddingHorizontal: 24
-  }
-})`
-  background-color: ${({ theme }) => theme.colors.background_primary};
+export const Container = styled.View`
+  ${({ theme }) => css`
+    padding: 0 24px ${getBottomSpace() + 24}px;
+    background-color: ${theme.colors.backgroundPrimary};
+  `}
 `;
 
 export const Header = styled.View`
-  width: 100%;
-  margin-top: ${getStatusBarHeight(true) + 115}px;
+  ${({ theme }) => css`
+    width: 100%;
+    margin-top: ${getStatusBarHeight() + 75}px;
+  `}
 `;
 
 export const Title = styled.Text`
-  font-size: ${RFValue(40)}px;
-  font-family: ${({ theme }) => theme.fonts.secondary_600};
-  color: ${({ theme }) => theme.colors.title};
+  ${({ theme }) => css`
+    font-family: ${theme.fonts.secondary_600};
+    font-size: ${RFValue(40)}px;
+    color: ${theme.colors.title};
+  `}
+`;
+
+export const Subtitle = styled.Text`
+  ${({ theme }) => css`
+    font-family: ${theme.fonts.primary_400};
+    font-size: ${RFValue(15)}px;
+    color: ${theme.colors.text};
+    line-height: ${RFValue(25)}px;
+    margin-top: 16px;
+  `}
 `;
 
 export const Form = styled.View`
-  width: 100%;
-  margin: 64px 0;
+  ${({ theme }) => css`
+    margin-top: 64px;
+  `}
 `;
 
-export const EmailInput = styled(Input)``;
+export const Inputs = styled.View`
+  ${({ theme }) => css`
 
-export const PasswordInput = styled(ProtectedInput)`
-  margin-top: 8px;
+  `}
 `;
 
-export const SubTitle = styled.Text`
-  font-size: ${RFValue(15)}px;
-  font-family: ${({ theme }) => theme.fonts.primary_400};
-  color: ${({ theme }) => theme.colors.text};
-  line-height: ${RFValue(25)}px;
-  margin-top: 16px;
-`;
-
-export const Footer = styled.View``;
-
-export const LoginButton = styled(Button)``;
-
-export const RegisterButton = styled(Button).attrs(({ theme }) => ({
-  light: true,
-  color: theme.colors.shape
-}))`
-  margin: 8px 0;
+export const Buttons = styled.View`
+  ${({ theme }) => css`
+    margin-top: 64px;
+  `}
 `;
