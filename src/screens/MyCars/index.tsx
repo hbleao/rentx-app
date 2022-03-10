@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { FlatList } from "react-native";
+import { Alert, FlatList } from "react-native";
 import { useSelector } from "react-redux";
 import { AntDesign } from '@expo/vector-icons';
 
@@ -29,18 +29,19 @@ import { getScheduleByUser } from "../../services";
 
 import { ScheduledByUserIdDTO } from "../../dtos/ScheduleDTO";
 
-export const MyCars = ({ navigation }) => {
+export const MyCars = ({ navigation }: any) => {
   const { colors } = useTheme();
-  const auth = useSelector(selectAuth);
+  const { user } = useSelector(selectAuth);
   const [cars, setCars] = useState<ScheduledByUserIdDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   async function loadCarsList() {
     try {
       setIsLoading(true);
-      const scheduleCarsByUserIdResponse = await getScheduleByUser(auth.user.id);
+      const scheduleCarsByUserIdResponse = await getScheduleByUser(user!.id);
       setCars(scheduleCarsByUserIdResponse);
     } catch (error) {
+      Alert.alert('Nenhum carro foi entrado em sua lista');
       console.error('loadCarsList', error);
     } finally {
       setIsLoading(false);
@@ -89,7 +90,7 @@ export const MyCars = ({ navigation }) => {
         ) : (
           <FlatList 
             data={cars}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.user_id}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => 
               <CarWrapper>

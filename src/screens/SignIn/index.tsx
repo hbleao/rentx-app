@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { 
-  Alert,
   Keyboard, 
   KeyboardAvoidingView, 
   StatusBar, 
@@ -8,7 +7,6 @@ import {
   ScrollView
 } from "react-native";
 import { useDispatch } from "react-redux";
-import * as Yup from 'yup';
 
 import { useTheme } from "styled-components";
 
@@ -23,17 +21,19 @@ import {
 } from "./styles";
 
 import { 
+  asyncLogin,
+  asyncOfflineLogin,
+} from '../../store/reducers';
+
+import { 
   Button,
   TextInput,
   PasswordInput,
   Separator
 } from "../../components";
 
-import { 
-  asyncLogin,
-} from '../../store/reducers';
-
-import { schema } from '../../constants/screens/SignIn';
+import { signInSchema } from './schema';
+import { errorMessage } from "../../utils/errorMessage";
 
 export const SignIn = ({ navigation }: any) => {
   const { colors } = useTheme();
@@ -43,20 +43,15 @@ export const SignIn = ({ navigation }: any) => {
   
   async function handleSubmit() {
     try {
-      await schema.validate({ email, password });
-
-      dispatch(asyncLogin());
+      await signInSchema.validate({ email, password });
+      const offlineUser = await dispatch(asyncOfflineLogin());
+      if(!!offlineUser && !email && !password) return;
+      await dispatch(asyncLogin({ email, password }));
     } catch (error) {
-      if (error instanceof Yup.ValidationError) {
-        Alert.alert('Opa... ', error.message);
-        console.log('Log: error', error);
-      } else {
-        Alert.alert(
-          'Ocorreu um erro na autenticação', 
-          'verifique suas credenciais.'
-        );
-        console.log('Log: error', error);
-      }
+      errorMessage({
+        error,
+        message: 'Ocorreu um erro na autenticação\n verifique suas credenciais.'
+      });
     }
   }
 
@@ -70,7 +65,7 @@ export const SignIn = ({ navigation }: any) => {
 
   return (
     <KeyboardAvoidingView
-      behavior="position"
+      behavior="height"
       enabled
     >
       <ScrollView>

@@ -4,19 +4,24 @@ import { User } from '../../database/model/User';
 import { UserProps } from '../../dtos/AuthDTO';
 
 export const registerOfflineUser = async ({
-  ...user
+  user_id,
+  email,
+  name,
+  driver_license,
+  avatar,
+  token
 }: UserProps) => {
   const userCollection = wMelonDatabase.get<User>('users');
 
   const newOfflineUser = await wMelonDatabase.write(async () => {
     return await userCollection.create(newUser => {
-      newUser.user_id = user.user_id;
-      newUser.name = user.name;
-      newUser.avatar = user.avatar;
-      newUser.email = user.email;
-      newUser.driver_license = user.driver_license;
-      newUser.token = user.token
+      newUser.user_id = user_id;
+      newUser.name = name;
+      newUser.avatar = avatar;
+      newUser.email = email;
+      newUser.driver_license = driver_license;
+      newUser.token = token
     });
   });
   return newOfflineUser;
-}
+};

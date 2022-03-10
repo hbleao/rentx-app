@@ -24,14 +24,14 @@ import { SignUpSecondStep } from "./SignUpSecondStep";
 
 import { BackButton, Bullet } from "../../components";
 
-import { registerUser } from '../../services/Users/RegisterUser';
+import { registerUser } from '../../services/Users/registerUser';
 
 import { 
-  schemaValidationFirstStep,
-  schemaValidationSecondStep
-} from '../../constants/screens/SignUp';
+  firstStepSchemaValidation,
+  secondStepSchemaValidation
+} from './schema';
 
-export const SignUp = ({ navigation }) => {
+export const SignUp = ({ navigation }: any) => {
   const { colors } = useTheme();
   const [secondStep, setSecondStep] = useState(false);
   const [name, setName] = useState('');
@@ -60,7 +60,7 @@ export const SignUp = ({ navigation }) => {
   async function handleNextStep() {
     try {
       setIsLoadingRegister(true);
-      await schemaValidationFirstStep.validate({
+      await firstStepSchemaValidation.validate({
         name,
         email,
         driverLicense
@@ -78,7 +78,7 @@ export const SignUp = ({ navigation }) => {
 
   async function handleConfirmRegister() {
     try {
-      await schemaValidationSecondStep.validate({
+      await secondStepSchemaValidation.validate({
         password,
         confirmPassword
       });
@@ -106,7 +106,7 @@ export const SignUp = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      behavior="position"
+      behavior="height"
       enabled
     >
       <StatusBar

@@ -56,6 +56,7 @@ export const PasswordEdit = ({
         enabled={!isLoading}
         loading={isLoading}
       />
+      <Separator height={16} />
     </Container>
   )
 };

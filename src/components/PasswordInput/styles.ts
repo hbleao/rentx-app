@@ -9,7 +9,6 @@ export const Container = styled.View<ContainerPros>`
     flex-direction: row;
     background-color: ${theme.colors.backgroundSecondary};
     border-bottom-color: ${isFocused ? theme.colors.main : 'transparent' };
-    border-bottom-width: 3px;
   `}
 `;
 

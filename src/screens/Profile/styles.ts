@@ -3,7 +3,7 @@ import { Pressable } from "react-native";
 import { getStatusBarHeight } from "react-native-iphone-x-helper";
 import { RFValue } from "react-native-responsive-fontsize";
 
-import { 
+import {
   OptionProps,
   OptionTitleProps
 } from "./types";
@@ -18,9 +18,7 @@ export const Container = styled.View`
 export const Header = styled.View`
   ${({ theme }) => css`
     width: 100%;
-    height: 227px;
-    background-color: ${theme.colors.header};
-    padding: 0 24px;
+    height: 350px;
     align-items: center;
   `}
 `;
@@ -28,10 +26,13 @@ export const Header = styled.View`
 export const HeaderTop = styled.View`
   ${({ theme }) => css`
     width: 100%;
+    background-color: ${theme.colors.header};
+    padding: 0 24px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-top: ${getStatusBarHeight() + 32}px;
+    padding-top: ${getStatusBarHeight() + 32}px;
+    padding-bottom: 130px;
   `}
 `;
 
@@ -54,7 +55,8 @@ export const PhotoContainer = styled.View`
     width: 180px;
     border-radius: 90px;
     background-color: ${theme.colors.shape};
-    margin-top: 48px;
+    position: absolute;
+    top: 130px;
   `}
 `;
 
@@ -84,7 +86,6 @@ export const Content = styled.View`
   ${({ theme }) => css`
     flex: 1;
     padding: 0 24px;
-    margin-top: 122px;
   `}
 `;
 

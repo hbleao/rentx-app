@@ -21,5 +21,4 @@ export class User extends Model {
 
   @field('token')
   token!: string;
-
 }

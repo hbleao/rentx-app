@@ -1,12 +1,19 @@
 import { api } from "../api";
 
-import { AuthorizationDTO } from "../../dtos/AuthDTO";
+import { UserProps } from "../../dtos/AuthDTO";
 import { ParamsProps } from "./type";
 
-export const getAuthorization = async (params: ParamsProps): Promise<AuthorizationDTO> => {
-  const httpAuthResponseService = await api.post('/sessions', params);
+export const getAuthorization = async (params: ParamsProps): Promise<UserProps> => {
+  const { data } = await api.post('/sessions', params);
+  api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
 
-  api.defaults.headers.common['Authorization'] = `Bearer ${httpAuthResponseService.data.token}`;
-
-  return httpAuthResponseService.data;
+  return {
+    id: data.id,
+    user_id: data.id,
+    email: data.email,
+    name: data.name,
+    driver_license: data.driver_license,
+    avatar: data.avatar,
+    token: data.token 
+  };
 }

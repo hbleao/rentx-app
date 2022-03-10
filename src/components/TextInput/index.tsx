@@ -38,7 +38,7 @@ export const TextInput = ({
         <Feather
           name={IconName}
           color={isFocused || isFilled ? colors.main : colors.text}
-          size={24}
+          size={20}
         />
       </IconContainer>
       <Input

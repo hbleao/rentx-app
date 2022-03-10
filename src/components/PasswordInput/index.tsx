@@ -42,7 +42,7 @@ export const PasswordInput = ({
         <Feather
           name={IconName}
           color={isFocused || isFilled ? colors.main : colors.text}
-          size={24}
+          size={20}
         />
       </IconContainer>
       <Input  
@@ -56,7 +56,7 @@ export const PasswordInput = ({
       <Feather
           name={isPasswordVisible ? "eye" : "eye-off"}
           color={colors.text}
-          size={24}
+          size={20}
         />
       </ChangePasswordVisibilityButton>
     </Container>

@@ -1,10 +1,10 @@
 import styled, { css } from "styled-components/native";
 import { RFValue } from "react-native-responsive-fontsize";
-import { Pressable } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 
 import { ContainerProps, TextProps } from './types';
 
-export const Container = styled(Pressable)<ContainerProps>`
+export const Container = styled(TouchableOpacity)<ContainerProps>`
   ${({ theme,bgColor }) => css`
     width: 100%;
     padding: 24px;

@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 
-export const schemaValidationFirstStep = Yup.object().shape({
+export const firstStepSchemaValidation = Yup.object().shape({
     driverLicense: Yup.string()
     .required('CNH é um campo obrigatório.'),
     email: Yup.string()
@@ -10,7 +10,7 @@ export const schemaValidationFirstStep = Yup.object().shape({
     .required('Nome é um campo obrigatório.'),
 });
 
-export const schemaValidationSecondStep = Yup.object().shape({
+export const secondStepSchemaValidation = Yup.object().shape({
   confirmPassword: Yup.string()
     .test('match', 'As senhas não conferem', function (value) {
       let { password } = this.parent

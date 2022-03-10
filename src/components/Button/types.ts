@@ -1,4 +1,4 @@
-import { PressableProps } from "react-native"
+import { TouchableOpacityProps } from "react-native"
 
 export type ButtonProps = {
   title: string;
@@ -10,7 +10,7 @@ export type ButtonProps = {
   onPress?: () => void;
 }
 
-export type ContainerProps = PressableProps & {
+export type ContainerProps = TouchableOpacityProps & {
   bgColor?: string;
 }
 

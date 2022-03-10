@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Alert, 
-  BackHandler, 
   FlatList, 
   StatusBar, 
 } from 'react-native';
 import { useTheme } from 'styled-components';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
+import NetInfo from '@react-native-community/netinfo';
 
 import {
   Container,
@@ -53,16 +52,23 @@ export const Home = gestureHandlerRootHOC(({ navigation }: any) => {
     navigation.navigate('MyCars');
   }
 
+  function handleNetInfo() {
+    NetInfo.fetch().then(state => {
+      console.log('Connection type', state.type);
+      console.log('Is connected?', state.isConnected);
+    });
+  }
+
   useEffect(() => {
     let isMounted = true;
-
-    if(isMounted) {
-      loadCarsList();
-    }
-
+    if(isMounted) loadCarsList();
     return () => {
       isMounted = false;
     }
+  }, []);
+
+  useEffect(() => {
+    handleNetInfo();
   }, []);
 
   return (

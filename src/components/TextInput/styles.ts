@@ -7,7 +7,6 @@ export const Container = styled.View`
   ${({ theme }) => css`
     flex-direction: row;
     background-color: ${theme.colors.backgroundSecondary};
-
   `}
 `;
 

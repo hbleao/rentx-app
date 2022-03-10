@@ -11,6 +11,7 @@ import {
 } from "../../../components";
 
 import { DataEditProps } from './types';
+import { useTheme } from "styled-components";
 
 export const DataEdit = ({
   name,
@@ -22,8 +23,7 @@ export const DataEdit = ({
   isLoading,
   handleConfirmDataUpdate
 }: DataEditProps) => {
-  console.log('Log: name', name)
-
+  const { colors } = useTheme();
   return (
     <Container>
       <TextInput
@@ -53,11 +53,13 @@ export const DataEdit = ({
       />
       <Separator height={24} />
       <Button 
-        title="Proxímo"
+        title="Salvar Alterações"
+        bgColor={colors.success}
         onPress={handleConfirmDataUpdate}
         enabled={!isLoading}
         loading={isLoading}
       />
+      <Separator height={16} />
     </Container>
   )
 };

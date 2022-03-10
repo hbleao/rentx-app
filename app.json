@@ -6,6 +6,14 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O aplicativo pode acessar suas imagens para melhorar sua experiência."
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "backgroundColor": "#1b1b1f"

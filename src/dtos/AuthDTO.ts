@@ -9,5 +9,6 @@ export type UserProps = {
 }
 
 export type AuthorizationDTO = {
-  user: UserProps | null;
+  user: UserProps | undefined;
+  token: string;
 }

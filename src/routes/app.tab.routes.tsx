@@ -29,7 +29,7 @@ export const TabPrivateRoutes = () => {
         tabBarShowLabel: false,
         tabBarStyle: {
           paddingVertical: Platform.OS === 'ios' ? 20 : 0,
-          height: 70,
+          height: 50,
           backgroundColor: colors.backgroundPrimary
         }
       }}

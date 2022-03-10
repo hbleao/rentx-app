@@ -6,5 +6,8 @@ export {
 } from './AuthorizationSlice';
 
 export {
-  asyncLogin
+  asyncLogin,
+  asyncLogout,
+  asyncOfflineLogin,
+  asyncUpdateUser
 } from './AuthorizationSlice/thunks';
